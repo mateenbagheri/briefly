@@ -1,15 +1,18 @@
 package main
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/mateenbagheri/briefly/server"
+)
 
 func main() {
 	router := gin.Default()
 
-	// //run database
+	// adding up routings to our system.
+	server.CollectionRoute(router)
+	server.UrlRoute(router)
+	server.UserRoute(router)
+
 	// configs.ConnectDB()
-
-	// //routes
-	// routes.UserRoute(router)
-
 	router.Run("localhost:6000")
 }
