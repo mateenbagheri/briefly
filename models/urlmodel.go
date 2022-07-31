@@ -6,5 +6,5 @@ type link struct {
 	MainUrl      string `json:"MainUrl" validate:"required"`
 	ExpDate      string `json:"ExpDate" validate:"required"`
 	CollectionID string `json:"CollectionID" validate:"required"`
-	HitNumbers   string `json:"HitNumbers" validate:"required"`
+	HitNumbers   string `json:"HitNumbers"`
 }
