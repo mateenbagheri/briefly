@@ -7,7 +7,7 @@ import (
 type RedisConfig struct {
 	Address  string `mapstructure:"address"`
 	Password string `mapstructure:"passowrd"`
-	DB       string `mapstructure:"DB"`
+	DB       int    `mapstructure:"DB"`
 }
 
 type MySQLConfig struct {
