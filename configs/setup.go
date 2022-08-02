@@ -1,13 +1,18 @@
 package configs
 
 import (
+	"database/sql"
 	"fmt"
+	"log"
 
 	"github.com/go-redis/redis"
+	_ "github.com/go-sql-driver/mysql"
 )
 
-func ConnectRedis() {
-	confs, _ := LoadConfig()
+var confs Config
+
+func ConnectRedis() (*redis.Client, error) {
+	confs, _ = LoadConfig()
 
 	fmt.Println(confs.Redis)
 
@@ -18,10 +23,32 @@ func ConnectRedis() {
 		DB:       confs.Redis.DB,
 	})
 
-	pong, err := client.Ping().Result()
-	fmt.Println(pong, err)
+	if err := client.Ping().Err(); err != nil {
+		log.Fatal("Could not connect to redis database.")
+		return nil, err
+	}
+	fmt.Println("Connected to redis database.")
+
+	return client, nil
 }
 
-func ConnectMySQL() {
+func ConnectMySQL() (db *sql.DB) {
+	confs, _ = LoadConfig()
 
+	address := confs.MySql.Address
+	driver := confs.MySql.Driver
+	user := confs.MySql.Username
+	password := confs.MySql.Address
+	schema := confs.MySql.Schema
+	port := confs.MySql.Port
+
+	db, err := sql.Open(driver, user+":"+password+"@tcp("+address+":"+port+")/"+schema)
+
+	if err != nil {
+		log.Fatal("Could not connect to mysql database.")
+		panic(err.Error())
+	}
+	fmt.Println("Connected to MySQL Database.")
+
+	return db
 }
