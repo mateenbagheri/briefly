@@ -3,7 +3,9 @@
         "address":"localhost",
         "password":"1234",
         "port":"3306",
-        "username":"root"
+        "username":"root",
+        "schema":"briefly",
+        "driver": "mysql"
     },
     "redis": {
         "address":"localhost:6379",
