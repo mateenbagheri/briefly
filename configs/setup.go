@@ -24,7 +24,6 @@ func ConnectRedis() (*redis.Client, error) {
 	})
 
 	if err := client.Ping().Err(); err != nil {
-		log.Fatal("Could not connect to redis database.")
 		return nil, err
 	}
 	fmt.Println("Connected to redis database.")
@@ -38,17 +37,18 @@ func ConnectMySQL() (db *sql.DB) {
 	address := confs.MySql.Address
 	driver := confs.MySql.Driver
 	user := confs.MySql.Username
-	password := confs.MySql.Address
+	password := confs.MySql.Password
 	schema := confs.MySql.Schema
 	port := confs.MySql.Port
 
-	db, err := sql.Open(driver, user+":"+password+"@tcp("+address+":"+port+")/"+schema)
+	connectionString := user + ":" + password + "@tcp(" + address + ":" + port + ")/" + schema
+	db, err := sql.Open(driver, connectionString)
 
 	if err != nil {
 		log.Fatal("Could not connect to mysql database.")
-		panic(err.Error())
 	}
-	fmt.Println("Connected to MySQL Database.")
+
+	log.Println("Connected to MySQL Database.")
 
 	return db
 }

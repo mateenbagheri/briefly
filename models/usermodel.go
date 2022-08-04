@@ -1,6 +1,6 @@
 package models
 
-type user struct {
+type User struct {
 	UserID     int    `json:"UserID"`
 	Name       string `json:"Name" validate:"required"`
 	FamilyName string `json:"FamilyName" validate:"required"`

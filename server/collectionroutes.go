@@ -1,17 +1,19 @@
 package server
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/mateenbagheri/briefly/controllers"
+)
 
 func CollectionRoute(router *gin.Engine) {
 	collection := router.Group("/collection")
 	{
-		collection.POST("/")
+		collection.GET("/", controllers.GetAllCollections)
+		collection.GET("/:CollectionID", controllers.GetCollectionByID)
 
-		collection.GET("/")
-		collection.GET("/:id")
+		// collection.POST("/")
+		// collection.PUT("/")
 
-		collection.PUT("/")
-
-		collection.DELETE("/")
+		// collection.DELETE("/")
 	}
 }
