@@ -1,6 +1,6 @@
 package models
 
-type link struct {
+type Url struct {
 	LinkID       int    `json:"LinkID"`
 	ShortenedUrl string `json:"ShortenedUrl"`
 	MainUrl      string `json:"MainUrl" validate:"required"`

@@ -13,7 +13,7 @@ type RedisConfig struct {
 type MySQLConfig struct {
 	Address  string `mapstructure:"address"`
 	Schema   string `mapstructure:"schema"`
-	Password string `mapstructure:"passowrd"`
+	Password string `mapstructure:"password"`
 	Port     string `mapstructure:"port"`
 	Username string `mapstructure:"username"`
 	Driver   string `mapstructure:"driver"`
