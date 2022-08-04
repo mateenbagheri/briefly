@@ -48,7 +48,7 @@ func GetCollectionByID(c *gin.Context) {
 		log.Fatal("CollectionID parameter was not found")
 	}
 
-	result, err := mysql.Query("SELECT * FROM briefly.collections WHERE CollectionID = ?", id)
+	result, err := mysql.Query("SELECT * FROM briefly.collections WHERE CollectionID = ?;", id)
 
 	if err != nil {
 		log.Fatal(err)
@@ -65,4 +65,24 @@ func GetCollectionByID(c *gin.Context) {
 		log.Fatal("Collection Not Found")
 	}
 	c.IndentedJSON(http.StatusOK, collection)
+}
+
+func DeleteCollectionByID(c *gin.Context) {
+	id := c.Param("CollectionID")
+
+	if id == "" {
+		c.AbortWithStatus(http.StatusNotFound)
+		return
+	}
+
+	result, err := mysql.Query("DELETE FROM collections WHERE CollectionID = ?", id)
+	if err != nil {
+		log.Fatal("Could not delete collection with this id from database")
+	} else {
+		c.IndentedJSON(http.StatusOK, result)
+	}
+}
+
+func CreateCollection(c *gin.Context) {
+
 }

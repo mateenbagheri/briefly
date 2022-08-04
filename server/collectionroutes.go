@@ -11,9 +11,9 @@ func CollectionRoute(router *gin.Engine) {
 		collection.GET("/", controllers.GetAllCollections)
 		collection.GET("/:CollectionID", controllers.GetCollectionByID)
 
-		// collection.POST("/")
-		// collection.PUT("/")
+		collection.DELETE("/:CollectionID", controllers.DeleteCollectionByID)
 
-		// collection.DELETE("/")
+		collection.POST("/", controllers.CreateCollection)
+		// collection.PUT("/")
 	}
 }
