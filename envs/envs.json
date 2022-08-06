@@ -11,5 +11,6 @@
         "address":"localhost:6379",
         "password":"",
         "DB": 0
-    }
+    },
+    "jwt-secret":"wowsecret1234"
 }

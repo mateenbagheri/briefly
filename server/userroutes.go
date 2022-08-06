@@ -1,13 +1,17 @@
 package server
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/mateenbagheri/briefly/controllers"
+)
 
 func UserRoute(router *gin.Engine) {
 	user := router.Group("/user")
 	{
-		user.GET("/")
-		user.POST("/")
-		user.PUT("/")
-		user.DELETE("/")
+		user.POST("/", controllers.SignUp)
+
+		// user.GET("/")
+		// user.PUT("/")
+		// user.DELETE("/")
 	}
 }

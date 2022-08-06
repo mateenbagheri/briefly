@@ -6,6 +6,7 @@ CREATE TABLE Users (
 	salt VARCHAR(100),
 	email VARCHAR(100),
 	CONSTRAINT PK_Users PRIMARY KEY(userID)
+	CONSTRAINT UC_Users UNIQUE (email)
 );
 
 CREATE TABLE Collections (

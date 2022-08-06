@@ -1,18 +1,14 @@
 package controllers
 
 import (
-	"database/sql"
 	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/mateenbagheri/briefly/configs"
 	"github.com/mateenbagheri/briefly/models"
 )
 
 // TODO :: ADD ERROR HANDLING TO THIS MODULE!
-
-var mysql *sql.DB = configs.ConnectMySQL()
 
 func GetAllCollections(c *gin.Context) {
 	var collections []models.Collection
