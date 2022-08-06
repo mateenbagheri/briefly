@@ -84,5 +84,52 @@ func DeleteCollectionByID(c *gin.Context) {
 }
 
 func CreateCollection(c *gin.Context) {
+	var newCollection models.Collection
 
+	if err := c.BindJSON(&newCollection); err != nil {
+		return
+	}
+
+	stmt, err := mysql.Prepare("INSERT INTO collections SET collectionName=?, userID=?;")
+
+	if err != nil {
+		log.Fatal("Error Preparing Insert Statement")
+	}
+
+	_, err = stmt.Exec(newCollection.CollectionName, newCollection.UserID)
+
+	if err != nil {
+		log.Fatal("Error inserting data into database")
+	}
+
+	c.IndentedJSON(http.StatusCreated, newCollection)
+}
+
+func EditCollectionByID(c *gin.Context) {
+	var collection models.Collection
+
+	if err := c.BindJSON(&collection); err != nil {
+		return
+	}
+
+	id := c.Param("CollectionID")
+
+	if id == "" {
+		c.AbortWithStatus(http.StatusNotFound)
+		return
+	}
+
+	stmt, err := mysql.Prepare("UPDATE collections SET collectionName=?, userID=? WHERE collectionID=?;")
+
+	if err != nil {
+		log.Fatal("Error Preparing Update Statement")
+	}
+
+	_, err = stmt.Exec(collection.CollectionName, collection.UserID, id)
+
+	if err != nil {
+		log.Fatal("Error updating data in database")
+	}
+
+	c.IndentedJSON(http.StatusNoContent, "")
 }
