@@ -6,4 +6,4 @@ import (
 	"github.com/mateenbagheri/briefly/configs"
 )
 
-var mysql *sql.DB = configs.ConnectMySQL()
+var Mysql *sql.DB = configs.ConnectMySQL()

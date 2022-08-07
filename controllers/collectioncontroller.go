@@ -13,7 +13,7 @@ import (
 func GetAllCollections(c *gin.Context) {
 	var collections []models.Collection
 
-	results, err := mysql.Query("SELECT * FROM briefly.collections;")
+	results, err := Mysql.Query("SELECT * FROM briefly.collections;")
 
 	if err != nil {
 		log.Fatal("Could not get all the collections from database")
@@ -44,7 +44,7 @@ func GetCollectionByID(c *gin.Context) {
 		log.Fatal("CollectionID parameter was not found")
 	}
 
-	result, err := mysql.Query("SELECT * FROM briefly.collections WHERE CollectionID = ?;", id)
+	result, err := Mysql.Query("SELECT * FROM briefly.collections WHERE CollectionID = ?;", id)
 
 	if err != nil {
 		log.Fatal(err)
@@ -71,7 +71,7 @@ func DeleteCollectionByID(c *gin.Context) {
 		return
 	}
 
-	result, err := mysql.Query("DELETE FROM collections WHERE CollectionID = ?", id)
+	result, err := Mysql.Query("DELETE FROM collections WHERE CollectionID = ?", id)
 	if err != nil {
 		log.Fatal("Could not delete collection with this id from database")
 	} else {
@@ -86,7 +86,7 @@ func CreateCollection(c *gin.Context) {
 		return
 	}
 
-	stmt, err := mysql.Prepare("INSERT INTO collections SET collectionName=?, userID=?;")
+	stmt, err := Mysql.Prepare("INSERT INTO collections SET collectionName=?, userID=?;")
 
 	if err != nil {
 		log.Fatal("Error Preparing Insert Statement")
@@ -115,7 +115,7 @@ func EditCollectionByID(c *gin.Context) {
 		return
 	}
 
-	stmt, err := mysql.Prepare("UPDATE collections SET collectionName=?, userID=? WHERE collectionID=?;")
+	stmt, err := Mysql.Prepare("UPDATE collections SET collectionName=?, userID=? WHERE collectionID=?;")
 
 	if err != nil {
 		log.Fatal("Error Preparing Update Statement")

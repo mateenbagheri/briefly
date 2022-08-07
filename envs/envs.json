@@ -12,5 +12,7 @@
         "password":"",
         "DB": 0
     },
-    "jwt-secret":"wowsecret1234"
+    "jwt": {
+        "jwt_secret":"wowsecret1234"
+    }
 }
