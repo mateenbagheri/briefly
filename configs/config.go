@@ -19,9 +19,14 @@ type MySQLConfig struct {
 	Driver   string `mapstructure:"driver"`
 }
 
+type JWTConfig struct {
+	JWTSecret string `mapstructure:"jwt_secret"`
+}
+
 type Config struct {
 	MySql MySQLConfig `mapstructure:"mysql"`
 	Redis RedisConfig `mapstructure:"redis"`
+	JWT   JWTConfig   `mapstructure:"jwt"`
 }
 
 var vp *viper.Viper
