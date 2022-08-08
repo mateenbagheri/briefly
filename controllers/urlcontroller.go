@@ -206,3 +206,72 @@ func CreateURL(c *gin.Context) {
 	}
 	c.IndentedJSON(http.StatusOK, url)
 }
+
+func GetURLByShortened(c *gin.Context) {
+	// TODO :: Check if the exp date has passed.
+	// TODO :: Bug fix :: fix if CollectionID = NULL situation
+	var url models.Url
+
+	shortened := c.Param("ShortenedUrl")
+
+	if shortened == "" {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{
+			"status":  http.StatusBadRequest,
+			"message": "ShortenedUrl not found in request params",
+		})
+		return
+	}
+
+	result, err := Mysql.Query(
+		`
+		SELECT 
+			linkID,
+			link,
+			shortened,
+			expDate,
+			collectionID,
+			hitNumbers 
+		FROM links 
+		WHERE shortened=?
+		LIMIT 1; 
+		`, shortened,
+	)
+
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{
+			"status":  http.StatusInternalServerError,
+			"message": "error running select sql query",
+			"error":   string(err.Error()),
+		})
+		return
+	}
+
+	if result.Next() {
+		err = result.Scan(
+			&url.LinkID,
+			&url.MainUrl,
+			&url.ShortenedUrl,
+			&url.ExpDate,
+			&url.CollectionID,
+			&url.HitNumbers,
+		)
+
+		if err != nil {
+			c.IndentedJSON(http.StatusInternalServerError, gin.H{
+				"status":  http.StatusInternalServerError,
+				"message": "could not match database url type with body",
+				"error":   string(err.Error()),
+			})
+			return
+		}
+	} else {
+		c.IndentedJSON(http.StatusNotFound, gin.H{
+			"status":  http.StatusNotFound,
+			"message": "no url with given shortened version was found.",
+			"error":   string(err.Error()),
+		})
+		return
+	}
+
+	c.IndentedJSON(http.StatusOK, url)
+}

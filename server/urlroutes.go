@@ -9,8 +9,8 @@ func UrlRoute(router *gin.Engine) {
 	url := router.Group("/url")
 	{
 		url.POST("/", controllers.CreateURL)
+		url.GET("/:ShortenedUrl", controllers.GetURLByShortened)
 
-		url.GET("/")
 		url.GET("/user/:UserID")
 		url.GET("/collection/:CollectionID")
 
