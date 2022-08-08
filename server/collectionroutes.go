@@ -10,6 +10,7 @@ func CollectionRoute(router *gin.Engine) {
 	{
 		collection.GET("/", controllers.GetAllCollections)
 		collection.GET("/:CollectionID", controllers.GetCollectionByID)
+		collection.GET("/user/:UserID") // TODO : IMPLEMENT
 
 		collection.DELETE("/:CollectionID", controllers.DeleteCollectionByID)
 

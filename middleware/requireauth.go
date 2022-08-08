@@ -43,7 +43,7 @@ func RequireAuth(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"status":  http.StatusBadRequest,
 				"message": "no sub found in given JWT claim",
-				"error":   err.Error(),
+				"error":   string(err.Error()),
 			})
 			return
 		}
@@ -54,7 +54,7 @@ func RequireAuth(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"status":  http.StatusInternalServerError,
 				"message": "could not select user info from database.",
-				"error":   err.Error(),
+				"error":   string(err.Error()),
 			})
 			return
 		}
@@ -74,7 +74,7 @@ func RequireAuth(c *gin.Context) {
 				c.JSON(http.StatusInternalServerError, gin.H{
 					"status":  http.StatusInternalServerError,
 					"message": "could not scan user info from result set.",
-					"error":   err.Error(),
+					"error":   string(err.Error()),
 				})
 				return
 			}

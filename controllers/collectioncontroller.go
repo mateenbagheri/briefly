@@ -13,10 +13,10 @@ func GetAllCollections(c *gin.Context) {
 	results, err := Mysql.Query("SELECT * FROM briefly.collections;")
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{
 			"status":  http.StatusInternalServerError,
 			"message": "Could not get all the collections from database",
-			"error":   err.Error(),
+			"error":   string(err.Error()),
 		})
 		return
 	}
@@ -27,10 +27,10 @@ func GetAllCollections(c *gin.Context) {
 		err := results.Scan(&collection.CollectionID, &collection.CollectionName, &collection.UserID)
 
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{
+			c.IndentedJSON(http.StatusInternalServerError, gin.H{
 				"status":  http.StatusInternalServerError,
 				"message": "could not match collection type with body",
-				"error":   err.Error(),
+				"error":   string(err.Error()),
 			})
 			return
 		}
@@ -48,7 +48,7 @@ func GetCollectionByID(c *gin.Context) {
 	var collection models.Collection
 
 	if id == "" {
-		c.JSON(http.StatusBadRequest, gin.H{
+		c.IndentedJSON(http.StatusBadRequest, gin.H{
 			"status":  http.StatusBadRequest,
 			"message": "Parameter CollectionID was not found in request",
 		})
@@ -58,10 +58,10 @@ func GetCollectionByID(c *gin.Context) {
 	result, err := Mysql.Query("SELECT * FROM briefly.collections WHERE CollectionID = ?;", id)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{
 			"status":  http.StatusInternalServerError,
 			"message": "error runnin sql select query.",
-			"error":   err.Error(),
+			"error":   string(err.Error()),
 		})
 		return
 	}
@@ -71,18 +71,18 @@ func GetCollectionByID(c *gin.Context) {
 		err = result.Scan(&collection.CollectionID, &collection.CollectionName, &collection.UserID)
 
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{
+			c.IndentedJSON(http.StatusInternalServerError, gin.H{
 				"status":  http.StatusInternalServerError,
 				"message": "could not match database collection type with body",
-				"error":   err.Error(),
+				"error":   string(err.Error()),
 			})
 			return
 		}
 	} else {
-		c.JSON(http.StatusNotFound, gin.H{
+		c.IndentedJSON(http.StatusNotFound, gin.H{
 			"status":  http.StatusNotFound,
 			"message": "no collection with given ID was found.",
-			"error":   err.Error(),
+			"error":   string(err.Error()),
 		})
 		return
 	}
@@ -99,10 +99,10 @@ func DeleteCollectionByID(c *gin.Context) {
 
 	result, err := Mysql.Query("DELETE FROM collections WHERE CollectionID = ?", id)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{
 			"status":  http.StatusInternalServerError,
 			"message": "Could not delete collection with this id from database",
-			"error":   err.Error(),
+			"error":   string(err.Error()),
 		})
 		return
 	} else {
@@ -120,10 +120,10 @@ func CreateCollection(c *gin.Context) {
 	stmt, err := Mysql.Prepare("INSERT INTO collections SET collectionName=?, userID=?;")
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{
 			"status":  http.StatusInternalServerError,
 			"message": "error in creating insert into statement",
-			"error":   err.Error(),
+			"error":   string(err.Error()),
 		})
 		return
 	}
@@ -131,10 +131,10 @@ func CreateCollection(c *gin.Context) {
 	_, err = stmt.Exec(newCollection.CollectionName, newCollection.UserID)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{
 			"status":  http.StatusInternalServerError,
 			"message": "failed inserting the data into database.",
-			"error":   err.Error(),
+			"error":   string(err.Error()),
 		})
 		return
 	}
@@ -159,10 +159,10 @@ func EditCollectionByID(c *gin.Context) {
 	stmt, err := Mysql.Prepare("UPDATE collections SET collectionName=?, userID=? WHERE collectionID=?;")
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{
 			"status":  http.StatusInternalServerError,
 			"message": "error in creating update statement",
-			"error":   err.Error(),
+			"error":   string(err.Error()),
 		})
 		return
 	}
@@ -170,10 +170,10 @@ func EditCollectionByID(c *gin.Context) {
 	_, err = stmt.Exec(collection.CollectionName, collection.UserID, id)
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{
 			"status":  http.StatusInternalServerError,
 			"message": "error updating collection data in database",
-			"error":   err.Error(),
+			"error":   string(err.Error()),
 		})
 		return
 	}
