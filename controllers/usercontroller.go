@@ -18,10 +18,10 @@ func SignUp(c *gin.Context) {
 	err := c.BindJSON(&user)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
+		c.IndentedJSON(http.StatusBadRequest, gin.H{
 			"status":  http.StatusBadRequest,
 			"message": "Failed to read users from body",
-			"error":   err.Error(),
+			"error":   string(err.Error()),
 		})
 		return
 	}
@@ -30,10 +30,10 @@ func SignUp(c *gin.Context) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(user.Password), 10)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
+		c.IndentedJSON(http.StatusBadRequest, gin.H{
 			"status":  http.StatusBadRequest,
 			"message": "failed to hash password",
-			"error":   err.Error(),
+			"error":   string(err.Error()),
 		})
 		return
 	}
@@ -55,10 +55,10 @@ func SignUp(c *gin.Context) {
 	)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
+		c.IndentedJSON(http.StatusBadRequest, gin.H{
 			"status":  http.StatusBadRequest,
 			"message": "Could not prepare user insert statement",
-			"error":   err.Error(),
+			"error":   string(err.Error()),
 		})
 		return
 	}
@@ -71,10 +71,10 @@ func SignUp(c *gin.Context) {
 	)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
+		c.IndentedJSON(http.StatusBadRequest, gin.H{
 			"status":  http.StatusBadRequest,
 			"message": "Could not insert new user in database",
-			"error":   err.Error(),
+			"error":   string(err.Error()),
 		})
 		return
 	}
@@ -95,10 +95,10 @@ func Login(c *gin.Context) {
 	err := c.BindJSON(&body)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
+		c.IndentedJSON(http.StatusBadRequest, gin.H{
 			"status":  http.StatusBadRequest,
 			"message": "Could not bind body to structure",
-			"error":   err.Error(),
+			"error":   string(err.Error()),
 		})
 	}
 
@@ -108,10 +108,10 @@ func Login(c *gin.Context) {
 	)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
+		c.IndentedJSON(http.StatusBadRequest, gin.H{
 			"status":  http.StatusBadRequest,
 			"message": "Could not create the SELECT statement",
-			"error":   err.Error(),
+			"error":   string(err.Error()),
 		})
 		return
 	}
@@ -127,18 +127,18 @@ func Login(c *gin.Context) {
 		)
 
 		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
+			c.IndentedJSON(http.StatusBadRequest, gin.H{
 				"status":  http.StatusBadRequest,
 				"message": "SELECT reusults differ from Struct",
-				"error":   err.Error(),
+				"error":   string(err.Error()),
 			})
 			return
 		}
 	} else {
-		c.JSON(http.StatusNotFound, gin.H{
+		c.IndentedJSON(http.StatusNotFound, gin.H{
 			"status":  http.StatusNotFound,
 			"message": "Invalid Email Address. No Such Email Exists",
-			"error":   err.Error(),
+			"error":   string(err.Error()),
 		})
 		return
 	}
@@ -147,7 +147,7 @@ func Login(c *gin.Context) {
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.Password))
 
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{
+		c.IndentedJSON(http.StatusUnauthorized, gin.H{
 			"status":  http.StatusUnauthorized,
 			"message": "Wrong Password. Try Again!",
 		})
@@ -165,17 +165,17 @@ func Login(c *gin.Context) {
 	tokenString, err := token.SignedString([]byte(confs.JWT.JWTSecret))
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
+		c.IndentedJSON(http.StatusBadRequest, gin.H{
 			"status":  http.StatusBadRequest,
 			"message": "Could not create token",
-			"error":   err.Error(),
+			"error":   string(err.Error()),
 		})
 		return
 	}
 
 	c.SetSameSite(http.SameSiteLaxMode)
 	c.SetCookie("authorization", tokenString, 3600*24*30, "", "", false, true)
-	c.JSON(http.StatusOK, gin.H{})
+	c.IndentedJSON(http.StatusOK, gin.H{})
 
 }
 

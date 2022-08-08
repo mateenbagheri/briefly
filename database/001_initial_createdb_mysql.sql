@@ -5,7 +5,7 @@ CREATE TABLE Users (
 	password VARCHAR(100),
 	salt VARCHAR(100),
 	email VARCHAR(100),
-	CONSTRAINT PK_Users PRIMARY KEY(userID)
+	CONSTRAINT PK_Users PRIMARY KEY(userID),
 	CONSTRAINT UC_Users UNIQUE (email)
 );
 
@@ -21,7 +21,7 @@ CREATE TABLE Collections (
 
 CREATE TABLE Links (
 	linkID BIGINT NOT NULL AUTO_INCREMENT,
-	link VARCHAR(100) NOT NULL,
+	link LONGTEXT NOT NULL,
 	shortened VARCHAR(100) NOT NULL,
 	expDate DATE NOT NULL,
 	collectionID INT,
