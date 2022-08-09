@@ -17,7 +17,6 @@ func CreateURL(c *gin.Context) {
 		CollectionID sql.NullInt64  `json:"CollectionID" binding:"required"`
 	}
 
-	// TODO :: TEST THIS MODULE THOROUGHLY
 	var url models.Url
 
 	err := c.BindJSON(&body)
@@ -62,7 +61,6 @@ func CreateURL(c *gin.Context) {
 				return
 			}
 
-			// TODO :: EXEC STATEMENT
 			_, err = stmt.Exec(
 				url.MainUrl,
 				url.ShortenedUrl,
@@ -208,9 +206,12 @@ func CreateURL(c *gin.Context) {
 }
 
 func GetURLByShortened(c *gin.Context) {
-	// TODO :: Check if the exp date has passed.
 	// TODO :: Bug fix :: fix if CollectionID = NULL situation
 	var url models.Url
+
+	var now string
+	currentTime := time.Now()
+	now = currentTime.Format("2006-02-01")
 
 	shortened := c.Param("ShortenedUrl")
 
@@ -269,6 +270,15 @@ func GetURLByShortened(c *gin.Context) {
 			"status":  http.StatusNotFound,
 			"message": "no url with given shortened version was found.",
 			"error":   string(err.Error()),
+		})
+		return
+	}
+
+	// TODO :: TEST
+	if url.ExpDate < now {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{
+			"status":  http.StatusBadRequest,
+			"message": "the expiration date of this url is passed",
 		})
 		return
 	}
