@@ -12,7 +12,7 @@ import (
 
 func CreateURL(c *gin.Context) {
 	var body struct {
-		MainUrl      string         `json:"MailUrl" binding:"required"`
+		MainUrl      string         `json:"MainUrl" binding:"required"`
 		ExpDate      sql.NullString `json:"ExpDate" binding:"required"`
 		CollectionID sql.NullInt64  `json:"CollectionID" binding:"required"`
 	}
@@ -272,4 +272,64 @@ func GetURLByShortened(c *gin.Context) {
 	}
 
 	c.IndentedJSON(http.StatusOK, url)
+}
+
+func GetCollectionURLs(c *gin.Context) {
+	var urls []models.Url
+
+	id := c.Param("CollectionID")
+
+	if id == "" {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{
+			"status":  http.StatusBadRequest,
+			"message": "could not find CollectionID in parameters",
+			"err":     "id == \"\"",
+		})
+		return
+	}
+
+	results, err := Mysql.Query(
+		`
+		SELECT
+			collectionID,
+			expDate,
+			link,
+			linkID,
+			shortened
+		FROM Links
+		WHERE collectionID = ?
+		`, id,
+	)
+
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{
+			"status":  http.StatusInternalServerError,
+			"message": "error running select query",
+			"error":   string(err.Error()),
+		})
+	}
+
+	for results.Next() {
+		var url models.Url
+
+		err := results.Scan(
+			&url.CollectionID,
+			&url.ExpDate,
+			&url.MainUrl,
+			&url.LinkID,
+			&url.ShortenedUrl,
+		)
+
+		if err != nil {
+			c.IndentedJSON(http.StatusBadRequest, gin.H{
+				"status":  http.StatusBadRequest,
+				"message": "could not match url type with body",
+				"error":   string(err.Error()),
+			})
+		}
+
+		urls = append(urls, url)
+	}
+
+	c.IndentedJSON(http.StatusOK, urls)
 }
