@@ -11,8 +11,8 @@ func UrlRoute(router *gin.Engine) {
 		url.POST("/", controllers.CreateURL)
 		url.GET("/:ShortenedUrl", controllers.GetURLByShortened)
 
+		url.GET("/collection/:CollectionID", controllers.GetCollectionURLs)
 		url.GET("/user/:UserID")
-		url.GET("/collection/:CollectionID")
 
 		url.DELETE("/")
 	}
