@@ -14,5 +14,5 @@ func main() {
 	server.UserRoute(router)
 
 	// configs.ConnectDB()
-	router.Run("localhost:6000")
+	router.Run(":6000")
 }
