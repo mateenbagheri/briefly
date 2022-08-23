@@ -180,3 +180,7 @@ func EditCollectionByID(c *gin.Context) {
 
 	c.IndentedJSON(http.StatusNoContent, "")
 }
+
+func GetUserCollection(c *gin.Context) {
+
+}

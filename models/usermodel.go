@@ -7,6 +7,6 @@ type User struct {
 	Name       string         `json:"Name" binding:"required"`
 	FamilyName string         `json:"FamilyName" binding:"required"`
 	Password   string         `json:"Password" binding:"required"`
-	Email      string         `json:"Email" validate:"required"`
+	Email      string         `json:"Email" binding:"required"`
 	Salt       sql.NullString `json:"Salt"`
 }

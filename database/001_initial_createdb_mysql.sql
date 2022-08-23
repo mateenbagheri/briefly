@@ -25,9 +25,18 @@ CREATE TABLE Links (
 	shortened VARCHAR(100) NOT NULL,
 	expDate DATE NOT NULL,
 	collectionID INT,
-	hitNumbers BIGINT,
 	CONSTRAINT PK_Links PRIMARY KEY(linkID),
 	CONSTRAINT FK_Links_collectionID FOREIGN KEY (collectionID)
         REFERENCES Collections(collectionID)
         ON DELETE CASCADE
 );
+
+CREATE TABLE LinkHits (
+	hitID BIGINT NOT NULL AUTO_INCREMENT,
+	linkID BIGINT NOT NULL,
+	hitDate DATE NOT NULL,
+	CONSTRAINT PK_LinkHits PRIMARY KEY(hitID),
+	CONSTRAINT FK_LinkHits_linkID FOREIGN KEY (linkID)
+		REFERENCES Links(linkID)
+		ON DELETE CASCADE
+)

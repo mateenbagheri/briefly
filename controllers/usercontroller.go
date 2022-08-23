@@ -63,7 +63,8 @@ func SignUp(c *gin.Context) {
 		return
 	}
 
-	_, err = stmt.Exec(user.UserID,
+	_, err = stmt.Exec(
+		user.UserID,
 		user.Name,
 		user.FamilyName,
 		user.Password,
@@ -80,7 +81,10 @@ func SignUp(c *gin.Context) {
 	}
 
 	// respond
-	c.IndentedJSON(http.StatusOK, "")
+	c.IndentedJSON(http.StatusOK, gin.H{
+		"status":http.StatusOK,
+		"message": "The user has been added successfully",
+	})
 }
 
 func Login(c *gin.Context) {

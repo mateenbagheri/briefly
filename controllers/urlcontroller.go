@@ -32,7 +32,6 @@ func CreateURL(c *gin.Context) {
 
 	var stmt *sql.Stmt
 
-	url.HitNumbers = 0
 	url.MainUrl = body.MainUrl
 	url.ShortenedUrl = scripts.ShortenUrl(body.MainUrl)
 
@@ -47,8 +46,7 @@ func CreateURL(c *gin.Context) {
 					link=?, 
 					shortened=?, 
 					expDate=?,
-					collectionID=?,
-					hitNumbers=?;
+					collectionID=?;
 				`,
 			)
 
@@ -66,7 +64,6 @@ func CreateURL(c *gin.Context) {
 				url.ShortenedUrl,
 				url.ExpDate,
 				url.CollectionID,
-				url.HitNumbers,
 			)
 
 			if err != nil {
@@ -81,7 +78,7 @@ func CreateURL(c *gin.Context) {
 		} else {
 			tmpExpDate := time.Now()
 			tmpExpDate = tmpExpDate.AddDate(0, 1, 0)
-			url.ExpDate = tmpExpDate.Format("2006-02-01")
+			url.ExpDate = tmpExpDate.Format("2006-01-02")
 			stmt, err = Mysql.Prepare(
 				`
 				INSERT INTO links 
@@ -89,8 +86,7 @@ func CreateURL(c *gin.Context) {
 					link=?, 
 					shortened=?, 
 					collectionID=?,
-					expDate=?,
-					hitNumbers=?;
+					expDate=?;
 				`,
 			)
 			if err != nil {
@@ -107,7 +103,6 @@ func CreateURL(c *gin.Context) {
 				url.ShortenedUrl,
 				url.CollectionID,
 				url.ExpDate,
-				url.HitNumbers,
 			)
 
 			if err != nil {
@@ -121,7 +116,6 @@ func CreateURL(c *gin.Context) {
 		}
 
 	} else {
-		url.HitNumbers = 0
 		url.MainUrl = body.MainUrl
 		if body.ExpDate.Valid {
 			url.ExpDate = body.ExpDate.String
@@ -132,8 +126,7 @@ func CreateURL(c *gin.Context) {
 				SET 
 					link=?, 
 					shortened=?, 
-					expDate =?,
-					hitNumbers=?;
+					expDate =?;
 				`,
 			)
 			if err != nil {
@@ -149,7 +142,6 @@ func CreateURL(c *gin.Context) {
 				url.MainUrl,
 				url.ShortenedUrl,
 				url.ExpDate,
-				url.HitNumbers,
 			)
 
 			if err != nil {
@@ -163,15 +155,14 @@ func CreateURL(c *gin.Context) {
 		} else {
 			tmpExpDate := time.Now()
 			tmpExpDate = tmpExpDate.AddDate(0, 1, 0)
-			url.ExpDate = tmpExpDate.Format("2006-02-01")
+			url.ExpDate = tmpExpDate.Format("2006-01-02")
 			stmt, err = Mysql.Prepare(
 				`
 				INSERT INTO links 
 				SET 
 					link=?, 
 					shortened=?, 
-					expDate=?,
-					hitNumbers=?;
+					expDate=?;
 				`,
 			)
 			if err != nil {
@@ -187,7 +178,6 @@ func CreateURL(c *gin.Context) {
 				url.MainUrl,
 				url.ShortenedUrl,
 				url.ExpDate,
-				url.HitNumbers,
 			)
 
 			if err != nil {
@@ -211,7 +201,7 @@ func GetURLByShortened(c *gin.Context) {
 
 	var now string
 	currentTime := time.Now()
-	now = currentTime.Format("2006-02-01")
+	now = currentTime.Format("2006-01-02")
 
 	shortened := c.Param("ShortenedUrl")
 
@@ -230,8 +220,7 @@ func GetURLByShortened(c *gin.Context) {
 			link,
 			shortened,
 			expDate,
-			collectionID,
-			hitNumbers 
+			collectionID
 		FROM links 
 		WHERE shortened=?
 		LIMIT 1; 
@@ -254,7 +243,6 @@ func GetURLByShortened(c *gin.Context) {
 			&url.ShortenedUrl,
 			&url.ExpDate,
 			&url.CollectionID,
-			&url.HitNumbers,
 		)
 
 		if err != nil {
