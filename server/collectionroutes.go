@@ -9,8 +9,8 @@ func CollectionRoute(router *gin.Engine) {
 	collection := router.Group("/collection")
 	{
 		collection.GET("/", controllers.GetAllCollections)
+		collection.GET("/user/:UserID", controllers.GetUserCollections)
 		collection.GET("/:CollectionID", controllers.GetCollectionByID)
-		collection.GET("/user/:UserID") // TODO : IMPLEMENT
 
 		collection.DELETE("/:CollectionID", controllers.DeleteCollectionByID)
 
