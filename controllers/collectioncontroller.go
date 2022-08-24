@@ -103,7 +103,10 @@ func DeleteCollectionByID(c *gin.Context) {
 	id := c.Param("CollectionID")
 
 	if id == "" {
-		c.AbortWithStatus(http.StatusNotFound)
+		c.IndentedJSON(http.StatusBadRequest, gin.H{
+			"status":  http.StatusBadRequest,
+			"message": "Could not find CollectionID parameter in request.",
+		})
 		return
 	}
 

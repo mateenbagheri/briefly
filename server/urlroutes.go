@@ -14,6 +14,6 @@ func UrlRoute(router *gin.Engine) {
 		url.GET("/collection/:CollectionID", controllers.GetCollectionURLs)
 		url.GET("/user/:UserID", controllers.GetUserURLs)
 
-		url.DELETE("/")
+		url.DELETE("/:LinkID", controllers.DeleteURLByID)
 	}
 }

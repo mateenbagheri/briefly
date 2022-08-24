@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"database/sql"
+	"log"
 	"net/http"
 	"time"
 
@@ -394,4 +395,51 @@ func GetUserURLs(c *gin.Context) {
 		urls = append(urls, url)
 	}
 	c.IndentedJSON(http.StatusOK, urls)
+}
+
+func DeleteURLByID(c *gin.Context) {
+	id := c.Param("LinkID")
+
+	if id == "" {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{
+			"status":  http.StatusBadRequest,
+			"message": "Could not find LinkID parameter in request.",
+		})
+		return
+	}
+
+	result, err := Mysql.Exec(`
+		DELETE FROM Links
+		WHERE linkID = ?
+		`, id,
+	)
+
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{
+			"status":  http.StatusInternalServerError,
+			"message": "could not run DELETE query to remove the URL.",
+			"error":   err.Error(),
+		})
+		return
+	}
+
+	count, err := result.RowsAffected()
+	if err != nil {
+		log.Println(err.Error())
+		return
+	}
+
+	if int(count) == 0 {
+		c.IndentedJSON(http.StatusNotFound, gin.H{
+			"status":  http.StatusNotFound,
+			"message": "Could not find any URLs with given ID",
+		})
+		return
+	}
+
+	c.IndentedJSON(http.StatusOK, gin.H{
+		"status":  http.StatusOK,
+		"message": "URL has been deleted successfully",
+		"result":  result,
+	})
 }
