@@ -14,10 +14,19 @@ import (
 
 func RequireAuth(c *gin.Context) {
 	confs, _ := configs.LoadConfig()
-	// get the cookie off request
-	tokenString, err := c.Cookie("authorization")
 
-	if err != nil {
+	tokenStringList, ok := c.Request.Header["Authorization"]
+
+	if !ok {
+		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
+			"status":  http.StatusUnauthorized,
+			"message": "Authorization header is required",
+		})
+	}
+
+	tokenString := tokenStringList[0]
+
+	if tokenString == "" {
 		c.AbortWithStatus(http.StatusUnauthorized)
 	}
 
@@ -43,7 +52,6 @@ func RequireAuth(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"status":  http.StatusBadRequest,
 				"message": "no sub found in given JWT claim",
-				"error":   string(err.Error()),
 			})
 			return
 		}
@@ -51,7 +59,7 @@ func RequireAuth(c *gin.Context) {
 		result, err := controllers.Mysql.Query("SELECT * FROM briefly.users WHERE userID = ?;", id)
 
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 				"status":  http.StatusInternalServerError,
 				"message": "could not select user info from database.",
 				"error":   string(err.Error()),
@@ -71,7 +79,7 @@ func RequireAuth(c *gin.Context) {
 			)
 
 			if err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{
+				c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
 					"status":  http.StatusInternalServerError,
 					"message": "could not scan user info from result set.",
 					"error":   string(err.Error()),
@@ -82,7 +90,7 @@ func RequireAuth(c *gin.Context) {
 			c.AbortWithStatus(http.StatusUnauthorized)
 		}
 		// attach request
-		c.Set("user", user)
+		c.Set("UserID", user.UserID)
 		// continiue
 		c.Next()
 	} else {
