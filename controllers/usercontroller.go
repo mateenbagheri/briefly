@@ -82,7 +82,7 @@ func SignUp(c *gin.Context) {
 
 	// respond
 	c.IndentedJSON(http.StatusOK, gin.H{
-		"status":http.StatusOK,
+		"status":  http.StatusOK,
 		"message": "The user has been added successfully",
 	})
 }
@@ -177,15 +177,10 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	c.SetSameSite(http.SameSiteLaxMode)
-	c.SetCookie("authorization", tokenString, 3600*24*30, "", "", false, true)
-	c.IndentedJSON(http.StatusOK, gin.H{})
-
-}
-
-func Validate(c *gin.Context) {
-	user, _ := c.Get("user")
+	// c.SetSameSite(http.SameSiteLaxMode)
+	// c.SetCookie("authorization", tokenString, 3600*24*30, "", "", false, true)
 	c.IndentedJSON(http.StatusOK, gin.H{
-		"message": user,
+		"status":        http.StatusOK,
+		"authorization": tokenString,
 	})
 }

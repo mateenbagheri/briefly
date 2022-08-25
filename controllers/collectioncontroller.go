@@ -173,7 +173,10 @@ func EditCollectionByID(c *gin.Context) {
 	id := c.Param("CollectionID")
 
 	if id == "" {
-		c.AbortWithStatus(http.StatusNotFound)
+		c.IndentedJSON(http.StatusNotFound, gin.H{
+			"status":  http.StatusNotFound,
+			"message": "Could not find CollectionID in parameter",
+		})
 		return
 	}
 

@@ -197,7 +197,6 @@ func CreateURL(c *gin.Context) {
 }
 
 func GetURLByShortened(c *gin.Context) {
-	// TODO :: Bug fix :: fix if CollectionID = NULL situation
 	var url models.UrlAlt
 
 	var now string
@@ -284,7 +283,7 @@ func GetCollectionURLs(c *gin.Context) {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{
 			"status":  http.StatusBadRequest,
 			"message": "could not find CollectionID in parameters",
-			"err":     "id == \"\"",
+			"err":     "CollectionID == \"\"",
 		})
 		return
 	}
