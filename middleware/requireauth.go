@@ -44,19 +44,23 @@ func RequireAuth(c *gin.Context) {
 			c.AbortWithStatus(http.StatusUnauthorized)
 		}
 
-		// find the user with token sub
+		// find the user with token userID
 		var user models.User
-		id := claims["sub"]
+		id := claims["userID"]
 
 		if id == "" {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"status":  http.StatusBadRequest,
-				"message": "no sub found in given JWT claim",
+				"message": "no userID found in given JWT claim",
 			})
 			return
 		}
 
-		result, err := controllers.Mysql.Query("SELECT * FROM briefly.users WHERE userID = ?;", id)
+		result, err := controllers.Mysql.Query(`
+			SELECT * 
+			FROM briefly.users 
+			WHERE userID = ?;
+		`, id)
 
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
