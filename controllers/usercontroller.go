@@ -160,8 +160,11 @@ func Login(c *gin.Context) {
 
 	//generate a jwt token
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub": user.UserID,
-		"exp": time.Now().Add(time.Hour * 24 * 30).Unix(),
+		"userID":    user.UserID,
+		"firstName": user.Name,
+		"lastName":  user.FamilyName,
+		"email":     user.Email,
+		"exp":       time.Now().Add(time.Hour * 24 * 30).Unix(),
 	})
 
 	confs, _ := configs.LoadConfig()
