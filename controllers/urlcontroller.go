@@ -12,11 +12,7 @@ import (
 )
 
 func CreateURL(c *gin.Context) {
-	var body struct {
-		MainUrl      string         `json:"MainUrl" binding:"required"`
-		ExpDate      sql.NullString `json:"ExpDate" binding:"required"`
-		CollectionID sql.NullInt64  `json:"CollectionID" binding:"required"`
-	}
+	var body models.CreateUrlBody
 
 	var url models.Url
 
