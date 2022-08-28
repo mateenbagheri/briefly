@@ -262,7 +262,6 @@ func GetURLByShortened(c *gin.Context) {
 		return
 	}
 
-	// TODO :: TEST
 	if url.ExpDate < now {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{
 			"status":  http.StatusBadRequest,
@@ -271,11 +270,36 @@ func GetURLByShortened(c *gin.Context) {
 		return
 	}
 
+	stmt, err := Mysql.Prepare(`
+		INSERT INTO linkhits 
+		SET linkID=?, hitDate=?;
+	`)
+
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{
+			"status":  http.StatusInternalServerError,
+			"message": "error in creating insert into statement",
+			"error":   string(err.Error()),
+		})
+		return
+	}
+
+	_, err = stmt.Exec(url.LinkID, now)
+
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{
+			"status":  http.StatusInternalServerError,
+			"message": "failed inserting the data into database.",
+			"error":   string(err.Error()),
+		})
+		return
+	}
+
 	c.IndentedJSON(http.StatusOK, url)
 }
 
 func GetCollectionURLs(c *gin.Context) {
-	var urls []models.Url
+	var urls []models.ReportUrl
 
 	id := c.Param("CollectionID")
 
@@ -291,12 +315,17 @@ func GetCollectionURLs(c *gin.Context) {
 	results, err := Mysql.Query(
 		`
 		SELECT
-			collectionID,
-			expDate,
-			link,
-			linkID,
-			shortened
-		FROM Links
+			L.collectionID,
+			L.expDate,
+			L.link,
+			L.linkID,
+			L.shortened,
+			(
+				SELECT COUNT(LH.hitID)
+				FROM linkhits AS LH
+				WHERE LH.linkID = LH.linkID
+			) AS hitNumber
+		FROM Links AS L
 		WHERE collectionID = ?
 		`, id,
 	)
@@ -310,7 +339,7 @@ func GetCollectionURLs(c *gin.Context) {
 	}
 
 	for results.Next() {
-		var url models.Url
+		var url models.ReportUrl
 
 		err := results.Scan(
 			&url.CollectionID,
@@ -318,6 +347,7 @@ func GetCollectionURLs(c *gin.Context) {
 			&url.MainUrl,
 			&url.LinkID,
 			&url.ShortenedUrl,
+			&url.HitNumber,
 		)
 
 		if err != nil {
