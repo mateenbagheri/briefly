@@ -38,3 +38,13 @@ type ReportUrl struct {
 	HitNumber    int64  `json:"hitnumber" binding:"required"`
 	CollectionID int64  `json:"CollectionID"`
 }
+
+/*
+	CreateUrlBody struct type is the type used for getting
+	data in CreateURL function in urlcontroller.go
+*/
+type CreateUrlBody struct {
+	MainUrl      string         `json:"MainUrl" binding:"required"`
+	ExpDate      sql.NullString `json:"ExpDate" binding:"required"`
+	CollectionID sql.NullInt64  `json:"CollectionID" binding:"required"`
+}
