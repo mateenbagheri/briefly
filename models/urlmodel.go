@@ -7,6 +7,7 @@ type Url struct {
 	ShortenedUrl string `json:"ShortenedUrl" binding:"required"`
 	MainUrl      string `json:"MainUrl" binding:"required"`
 	ExpDate      string `json:"ExpDate" binding:"required"`
+	CreateDate   string `json:"CreateDate" binding:"required"`
 	CollectionID int64  `json:"CollectionID"`
 }
 
@@ -21,6 +22,7 @@ type UrlAlt struct {
 	ShortenedUrl string        `json:"ShortenedUrl" binding:"required"`
 	MainUrl      string        `json:"MainUrl" binding:"required"`
 	ExpDate      string        `json:"ExpDate" binding:"required"`
+	CreateDate   string        `json:"CreateDate" binding:"required"`
 	CollectionID sql.NullInt64 `json:"CollectionID"`
 }
 
@@ -31,12 +33,14 @@ type UrlAlt struct {
 	hitnumbers of the specified url.
 */
 type ReportUrl struct {
-	LinkID       int64  `json:"LinkID"`
-	ShortenedUrl string `json:"ShortenedUrl" binding:"required"`
-	MainUrl      string `json:"MainUrl" binding:"required"`
-	ExpDate      string `json:"ExpDate" binding:"required"`
-	HitNumber    int64  `json:"hitnumber" binding:"required"`
-	CollectionID int64  `json:"CollectionID"`
+	LinkID         int64  `json:"LinkID"`
+	ShortenedUrl   string `json:"ShortenedUrl" binding:"required"`
+	MainUrl        string `json:"MainUrl" binding:"required"`
+	CollectionName string `json:"CollectionName"`
+	ExpDate        string `json:"ExpDate" binding:"required"`
+	CreateDate     string `json:"CreateDate" binding:"required"`
+	HitNumber      int64  `json:"hitnumber" binding:"required"`
+	CollectionID   int64  `json:"CollectionID"`
 }
 
 /*
