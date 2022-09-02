@@ -13,6 +13,7 @@ func UrlRoute(router *gin.Engine) {
 		url.GET("/:ShortenedUrl", controllers.GetURLByShortened)
 		url.GET("/collection/:CollectionID", controllers.GetCollectionURLs)
 		url.GET("/user/:UserID", controllers.GetUserURLs)
+		url.GET("/user/:UserID/history", controllers.GetUserUrlReport)
 
 		url.DELETE("/:LinkID", controllers.DeleteURLByID)
 	}

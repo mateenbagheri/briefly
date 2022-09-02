@@ -29,8 +29,11 @@ func CreateURL(c *gin.Context) {
 
 	var stmt *sql.Stmt
 
+	tmpCreateDate := time.Now()
+
 	url.MainUrl = body.MainUrl
 	url.ShortenedUrl = scripts.ShortenUrl(body.MainUrl)
+	url.CreateDate = tmpCreateDate.Format("2006-01-02")
 
 	if body.CollectionID.Valid {
 		url.CollectionID = body.CollectionID.Int64
@@ -43,6 +46,7 @@ func CreateURL(c *gin.Context) {
 					link=?, 
 					shortened=?, 
 					expDate=?,
+					createDate=?,
 					collectionID=?;
 				`,
 			)
@@ -60,6 +64,7 @@ func CreateURL(c *gin.Context) {
 				url.MainUrl,
 				url.ShortenedUrl,
 				url.ExpDate,
+				url.CreateDate,
 				url.CollectionID,
 			)
 
@@ -83,7 +88,8 @@ func CreateURL(c *gin.Context) {
 					link=?, 
 					shortened=?, 
 					collectionID=?,
-					expDate=?;
+					expDate=?,
+					createDate=?;
 				`,
 			)
 			if err != nil {
@@ -100,6 +106,7 @@ func CreateURL(c *gin.Context) {
 				url.ShortenedUrl,
 				url.CollectionID,
 				url.ExpDate,
+				url.CreateDate,
 			)
 
 			if err != nil {
@@ -123,7 +130,8 @@ func CreateURL(c *gin.Context) {
 				SET 
 					link=?, 
 					shortened=?, 
-					expDate =?;
+					expDate =?,
+					createDate=?;
 				`,
 			)
 			if err != nil {
@@ -139,6 +147,7 @@ func CreateURL(c *gin.Context) {
 				url.MainUrl,
 				url.ShortenedUrl,
 				url.ExpDate,
+				url.CreateDate,
 			)
 
 			if err != nil {
@@ -159,7 +168,8 @@ func CreateURL(c *gin.Context) {
 				SET 
 					link=?, 
 					shortened=?, 
-					expDate=?;
+					expDate=?,
+					createDate=?;
 				`,
 			)
 			if err != nil {
@@ -175,6 +185,7 @@ func CreateURL(c *gin.Context) {
 				url.MainUrl,
 				url.ShortenedUrl,
 				url.ExpDate,
+				url.CreateDate,
 			)
 
 			if err != nil {
@@ -216,6 +227,7 @@ func GetURLByShortened(c *gin.Context) {
 			link,
 			shortened,
 			expDate,
+			createDate,
 			collectionID
 		FROM links 
 		WHERE shortened=?
@@ -238,6 +250,7 @@ func GetURLByShortened(c *gin.Context) {
 			&url.MainUrl,
 			&url.ShortenedUrl,
 			&url.ExpDate,
+			&url.CreateDate,
 			&url.CollectionID,
 		)
 
@@ -313,6 +326,7 @@ func GetCollectionURLs(c *gin.Context) {
 		SELECT
 			L.collectionID,
 			L.expDate,
+			L.createDate,
 			L.link,
 			L.linkID,
 			L.shortened,
@@ -340,6 +354,7 @@ func GetCollectionURLs(c *gin.Context) {
 		err := results.Scan(
 			&url.CollectionID,
 			&url.ExpDate,
+			&url.CreateDate,
 			&url.MainUrl,
 			&url.LinkID,
 			&url.ShortenedUrl,
@@ -378,6 +393,7 @@ func GetUserURLs(c *gin.Context) {
 		SELECT 
 			L.collectionID,
 			L.expDate,
+			L.createDate,
 			L.link,
 			L.linkID,
 			L.shortened
@@ -404,6 +420,7 @@ func GetUserURLs(c *gin.Context) {
 		err := results.Scan(
 			&url.CollectionID,
 			&url.ExpDate,
+			&url.CreateDate,
 			&url.MainUrl,
 			&url.LinkID,
 			&url.ShortenedUrl,
@@ -466,5 +483,71 @@ func DeleteURLByID(c *gin.Context) {
 		"status":  http.StatusOK,
 		"message": "URL has been deleted successfully",
 		"result":  result,
+	})
+}
+
+func GetUserUrlReport(c *gin.Context) {
+	userID := c.Param("UserID")
+	var urls []models.ReportUrl
+
+	results, err := Mysql.Query(
+		`
+		SELECT
+			C.collectionID,
+			C.collectionName,
+			L.expDate,
+			L.createDate,
+			L.link,
+			L.linkID,
+			L.shortened,
+			(
+				SELECT COUNT(LH.hitID)
+				FROM linkhits AS LH
+				WHERE LH.linkID = LH.linkID
+			) AS hitNumber
+		FROM briefly.links AS L
+			INNER JOIN briefly.collections AS C
+				ON C.collectionID = L.collectionID
+		WHERE C.userID = ?
+		ORDER BY L.createDate DESC
+		`, userID,
+	)
+
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{
+			"status":  http.StatusInternalServerError,
+			"message": "error running select sql query",
+			"error":   string(err.Error()),
+		})
+		return
+	}
+
+	for results.Next() {
+		var url models.ReportUrl
+
+		err := results.Scan(
+			&url.CollectionID,
+			&url.CollectionName,
+			&url.ExpDate,
+			&url.CreateDate,
+			&url.MainUrl,
+			&url.LinkID,
+			&url.ShortenedUrl,
+			&url.HitNumber,
+		)
+
+		if err != nil {
+			c.IndentedJSON(http.StatusBadRequest, gin.H{
+				"status":  http.StatusBadRequest,
+				"message": "could not match url type with body",
+				"error":   string(err.Error()),
+			})
+		}
+		urls = append(urls, url)
+	}
+
+	c.IndentedJSON(http.StatusOK, gin.H{
+		"status":  http.StatusOK,
+		"message": urls,
 	})
 }
