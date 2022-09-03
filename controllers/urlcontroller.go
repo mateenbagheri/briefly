@@ -295,7 +295,7 @@ func GetCollectionURLs(c *gin.Context) {
 				WHERE LH.linkID = LH.linkID
 			) AS hitNumber
 		FROM links AS L
-			INNER JOIN linkcollections AS LC
+			INNER JOIN collectionlinks AS LC
 				ON LC.linkID = L.linkID
 		WHERE collectionID = ?
 		`, id,
@@ -359,7 +359,7 @@ func GetUserURLs(c *gin.Context) {
 			L.linkID,
 			L.shortened
 		FROM links AS L
-			INNER JOIN linkcollections AS LC
+			INNER JOIN collectionlinks AS LC
 				ON LC.linkID = L.linkID
 			INNER JOIN collections AS C
 				ON LC.collectionID = C.collectionID
