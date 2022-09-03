@@ -1,3 +1,5 @@
+USE briefly;
+
 CREATE TABLE Users (
 	userID INT NOT NULL AUTO_INCREMENT,
 	name VARCHAR(50),
@@ -6,7 +8,7 @@ CREATE TABLE Users (
 	salt VARCHAR(100),
 	email VARCHAR(100),
 	CONSTRAINT PK_Users PRIMARY KEY(userID),
-	CONSTRAINT UC_Users UNIQUE (email)
+	CONSTRAINT UC_UserEmail UNIQUE (email)
 );
 
 CREATE TABLE Collections (
@@ -21,14 +23,25 @@ CREATE TABLE Collections (
 
 CREATE TABLE Links (
 	linkID BIGINT NOT NULL AUTO_INCREMENT,
-	link LONGTEXT NOT NULL,
+	link VARCHAR(600) NOT NULL,
 	shortened VARCHAR(100) NOT NULL,
 	createDate DATE NOT NULL,
 	expDate DATE NOT NULL,
 	collectionID INT,
 	CONSTRAINT PK_Links PRIMARY KEY(linkID),
-	CONSTRAINT FK_Links_collectionID FOREIGN KEY (collectionID)
-        REFERENCES Collections(collectionID)
+	CONSTRAINT UC_MainLinks UNIQUE(link)
+);
+
+CREATE TABLE CollectionLinks (
+	collectionLinkID BIGINT NOT NULL AUTO_INCREMENT,
+    linkID BIGINT NOT NULL,
+    collectionID INT NOT NULL,
+    CONSTRAINT PK_CollectionLinks PRIMARY KEY(collectionLinkID),
+    CONSTRAINT FK_CollectionLinks_collectionID FOREIGN KEY (collectionID)
+		REFERENCES Collections(collectionID)
+		ON DELETE CASCADE,
+	CONSTRAINT FK_CollectionLinks_linkID FOREIGN KEY (linkID)
+		REFERENCES Links(linkID)
         ON DELETE CASCADE
 );
 
