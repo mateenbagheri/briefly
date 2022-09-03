@@ -243,7 +243,7 @@ func GetURLByShortened(c *gin.Context) {
 		SET linkID=?, hitDate=?;
 	`)
 
-	if err != nil {
+	if err != nil{
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{
 			"status":  http.StatusInternalServerError,
 			"message": "error in creating insert into statement",
