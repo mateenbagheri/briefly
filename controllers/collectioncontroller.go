@@ -156,10 +156,7 @@ func CreateCollection(c *gin.Context) {
 }
 
 func EditCollectionByID(c *gin.Context) {
-	var body struct {
-		CollectionID   int    `json:"CollectionID" binding:"required"`
-		CollectionName string `json:"CollectionName" binding:"required"`
-	}
+	var body models.EditCollectionByIDBody
 
 	if err := c.BindJSON(&body); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{
@@ -261,4 +258,54 @@ func GetUserCollections(c *gin.Context) {
 	results.Close()
 
 	c.IndentedJSON(http.StatusOK, collections)
+}
+
+func AddUrlToCollection(c *gin.Context) {
+	var body models.AddUrlToCollectionBody
+
+	if err := c.BindJSON(&body); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{
+			"status":  http.StatusBadRequest,
+			"message": "could not bind body to documented style for API",
+			"error":   string(err.Error()),
+		})
+		return
+	}
+
+	stmt, err := Mysql.Prepare(
+		`
+		INSERT INTO collectionlinks
+		SET
+			linkID = ?,
+			collectionID = ?
+		`,
+	)
+
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{
+			"status":  http.StatusInternalServerError,
+			"message": "Could not prepare collection and links statement",
+			"error":   string(err.Error()),
+		})
+		return
+	}
+
+	_, err = stmt.Exec(
+		&body.LinkID,
+		&body.CollectionID,
+	)
+
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{
+			"status":  http.StatusInternalServerError,
+			"message": "Could not insert the connection row between collection and link",
+			"error":   string(err.Error()),
+		})
+		return
+	}
+
+	c.IndentedJSON(http.StatusOK, gin.H{
+		"status":  http.StatusOK,
+		"message": "link added to collection successfully",
+	})
 }
