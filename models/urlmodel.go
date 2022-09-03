@@ -8,7 +8,6 @@ type Url struct {
 	MainUrl      string `json:"MainUrl" binding:"required"`
 	ExpDate      string `json:"ExpDate" binding:"required"`
 	CreateDate   string `json:"CreateDate" binding:"required"`
-	CollectionID int64  `json:"CollectionID"`
 }
 
 /*

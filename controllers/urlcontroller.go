@@ -35,247 +35,133 @@ func CreateURL(c *gin.Context) {
 	url.ShortenedUrl = scripts.ShortenUrl(body.MainUrl)
 	url.CreateDate = tmpCreateDate.Format("2006-01-02")
 
-	if body.CollectionID.Valid {
-		url.CollectionID = body.CollectionID.Int64
-		if body.ExpDate.Valid {
-			url.ExpDate = body.ExpDate.String
-			stmt, err = Mysql.Prepare(
-				`
-				INSERT INTO links 
-				SET 
-					link=?, 
-					shortened=?, 
-					expDate=?,
-					createDate=?;
-				`,
-			)
+	// checking if this url is already shortened in our system
+	statement := `
+		SELECT 
+			linkID,
+			shortened, 
+			createDate,
+			expDate
+		FROM links 
+		WHERE shortened = ?;
+	`
 
-			if err != nil {
-				c.IndentedJSON(http.StatusInternalServerError, gin.H{
-					"status":  http.StatusInternalServerError,
-					"message": "could not prepare insert statement [type 1]",
-					"error":   string(err.Error()),
-				})
-				return
-			}
+	err = Mysql.QueryRow(statement, url.ShortenedUrl).Scan(
+		&url.LinkID,
+		&url.ShortenedUrl,
+		&url.CreateDate,
+		&url.ExpDate,
+	)
 
-			res, err := stmt.Exec(
-				url.MainUrl,
-				url.ShortenedUrl,
-				url.ExpDate,
-				url.CreateDate,
-			)
+	if err == nil {
+		c.IndentedJSON(http.StatusOK, url)
+		return
+	}
 
-			if err != nil {
-				c.IndentedJSON(http.StatusInternalServerError, gin.H{
-					"status":  http.StatusInternalServerError,
-					"message": "error inserting data into database type[1]",
-					"error":   string(err.Error()),
-				})
-				return
-			}
-
-			lid, err := res.LastInsertId()
-
-			if err != nil {
-				c.IndentedJSON(http.StatusInternalServerError, gin.H{
-					"status":  http.StatusInternalServerError,
-					"message": "could not retrieve last inserted data",
-					"error":   string(err.Error()),
-				})
-				return
-			}
-
-			url.LinkID = lid
-		} else {
-			tmpExpDate := time.Now()
-			tmpExpDate = tmpExpDate.AddDate(0, 1, 0)
-			url.ExpDate = tmpExpDate.Format("2006-01-02")
-			stmt, err = Mysql.Prepare(
-				`
-				INSERT INTO links 
-				SET 
-					link=?, 
-					shortened=?, 
-					expDate=?,
-					createDate=?;
-				`,
-			)
-			if err != nil {
-				c.IndentedJSON(http.StatusInternalServerError, gin.H{
-					"status":  http.StatusInternalServerError,
-					"message": "could not prepare insert statement [type 2]",
-					"error":   string(err.Error()),
-				})
-				return
-			}
-
-			res, err := stmt.Exec(
-				url.MainUrl,
-				url.ShortenedUrl,
-				url.ExpDate,
-				url.CreateDate,
-			)
-
-			if err != nil {
-				c.IndentedJSON(http.StatusInternalServerError, gin.H{
-					"status":  http.StatusInternalServerError,
-					"message": "error inserting data into database type[2]",
-					"error":   string(err.Error()),
-				})
-				return
-			}
-
-			lid, err := res.LastInsertId()
-
-			if err != nil {
-				c.IndentedJSON(http.StatusInternalServerError, gin.H{
-					"status":  http.StatusInternalServerError,
-					"message": "could not retrieve last inserted data",
-					"error":   string(err.Error()),
-				})
-				return
-			}
-
-			url.LinkID = lid
-		}
-		stmt, err := Mysql.Prepare(
+	// Inserting URL add result into database
+	if body.ExpDate.Valid {
+		url.ExpDate = body.ExpDate.String
+		stmt, err = Mysql.Prepare(
 			`
-			INSERT INTO collectionlinks
-			SET
-				linkID = ?,
-				collectionID = ?
+			INSERT INTO links 
+			SET 
+				link=?, 
+				shortened=?, 
+				expDate=?,
+				createDate=?;
 			`,
 		)
 
 		if err != nil {
 			c.IndentedJSON(http.StatusInternalServerError, gin.H{
 				"status":  http.StatusInternalServerError,
-				"message": "Could not prepare collection and links statement",
+				"message": "could not prepare insert statement [type 1]",
 				"error":   string(err.Error()),
 			})
 			return
 		}
 
-		_, err = stmt.Exec(
-			&url.LinkID,
-			&url.CollectionID,
+		res, err := stmt.Exec(
+			url.MainUrl,
+			url.ShortenedUrl,
+			url.ExpDate,
+			url.CreateDate,
 		)
 
 		if err != nil {
 			c.IndentedJSON(http.StatusInternalServerError, gin.H{
 				"status":  http.StatusInternalServerError,
-				"message": "Could not insert the connection row between collection and link",
+				"message": "error inserting data into database type[1]",
 				"error":   string(err.Error()),
 			})
 			return
 		}
 
-	} else {
-		url.MainUrl = body.MainUrl
-		if body.ExpDate.Valid {
-			url.ExpDate = body.ExpDate.String
+		lid, err := res.LastInsertId()
 
-			stmt, err = Mysql.Prepare(
-				`
-				INSERT INTO links 
-				SET 
-					link=?, 
-					shortened=?, 
-					expDate =?,
-					createDate=?;
-				`,
-			)
-			if err != nil {
-				c.IndentedJSON(http.StatusInternalServerError, gin.H{
-					"status":  http.StatusInternalServerError,
-					"message": "could not prepare insert statement [type 3]",
-					"error":   string(err.Error()),
-				})
-				return
-			}
-
-			res, err := stmt.Exec(
-				url.MainUrl,
-				url.ShortenedUrl,
-				url.ExpDate,
-				url.CreateDate,
-			)
-
-			if err != nil {
-				c.IndentedJSON(http.StatusInternalServerError, gin.H{
-					"status":  http.StatusInternalServerError,
-					"message": "error inserting data into database type[3]",
-					"error":   string(err.Error()),
-				})
-				return
-			}
-
-			lid, err := res.LastInsertId()
-
-			if err != nil {
-				c.IndentedJSON(http.StatusInternalServerError, gin.H{
-					"status":  http.StatusInternalServerError,
-					"message": "could not retrieve last inserted data",
-					"error":   string(err.Error()),
-				})
-				return
-			}
-
-			url.LinkID = lid
-		} else {
-			tmpExpDate := time.Now()
-			tmpExpDate = tmpExpDate.AddDate(0, 1, 0)
-			url.ExpDate = tmpExpDate.Format("2006-01-02")
-			stmt, err = Mysql.Prepare(
-				`
-				INSERT INTO links 
-				SET 
-					link=?, 
-					shortened=?, 
-					expDate=?,
-					createDate=?;
-				`,
-			)
-			if err != nil {
-				c.IndentedJSON(http.StatusInternalServerError, gin.H{
-					"status":  http.StatusInternalServerError,
-					"message": "could not prepare insert statement [type 4]",
-					"error":   string(err.Error()),
-				})
-				return
-			}
-
-			res, err := stmt.Exec(
-				url.MainUrl,
-				url.ShortenedUrl,
-				url.ExpDate,
-				url.CreateDate,
-			)
-
-			if err != nil {
-				c.IndentedJSON(http.StatusInternalServerError, gin.H{
-					"status":  http.StatusInternalServerError,
-					"message": "error inserting data into database type[4]",
-					"error":   string(err.Error()),
-				})
-				return
-			}
-
-			lid, err := res.LastInsertId()
-
-			if err != nil {
-				c.IndentedJSON(http.StatusInternalServerError, gin.H{
-					"status":  http.StatusInternalServerError,
-					"message": "could not retrieve last inserted data",
-					"error":   string(err.Error()),
-				})
-				return
-			}
-
-			url.LinkID = lid
+		if err != nil {
+			c.IndentedJSON(http.StatusInternalServerError, gin.H{
+				"status":  http.StatusInternalServerError,
+				"message": "could not retrieve last inserted data",
+				"error":   string(err.Error()),
+			})
+			return
 		}
+
+		url.LinkID = lid
+	} else {
+		tmpExpDate := time.Now()
+		tmpExpDate = tmpExpDate.AddDate(0, 1, 0)
+		url.ExpDate = tmpExpDate.Format("2006-01-02")
+		stmt, err = Mysql.Prepare(
+			`
+			INSERT INTO links 
+			SET 
+				link=?, 
+				shortened=?, 
+				expDate=?,
+				createDate=?;
+			`,
+		)
+		if err != nil {
+			c.IndentedJSON(http.StatusInternalServerError, gin.H{
+				"status":  http.StatusInternalServerError,
+				"message": "could not prepare insert statement [type 2]",
+				"error":   string(err.Error()),
+			})
+			return
+		}
+
+		res, err := stmt.Exec(
+			url.MainUrl,
+			url.ShortenedUrl,
+			url.ExpDate,
+			url.CreateDate,
+		)
+
+		if err != nil {
+			c.IndentedJSON(http.StatusInternalServerError, gin.H{
+				"status":  http.StatusInternalServerError,
+				"message": "error inserting data into database type[2]",
+				"error":   string(err.Error()),
+			})
+			return
+		}
+
+		lid, err := res.LastInsertId()
+
+		if err != nil {
+			c.IndentedJSON(http.StatusInternalServerError, gin.H{
+				"status":  http.StatusInternalServerError,
+				"message": "could not retrieve last inserted data",
+				"error":   string(err.Error()),
+			})
+			return
+		}
+
+		url.LinkID = lid
 	}
+
 	c.IndentedJSON(http.StatusOK, url)
 }
 
