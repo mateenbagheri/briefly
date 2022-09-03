@@ -263,6 +263,26 @@ func GetUserCollections(c *gin.Context) {
 func AddUrlToCollection(c *gin.Context) {
 	var body models.AddUrlToCollectionBody
 
+	// checking if this url is already shortened in our system
+	statement := `
+		SELECT 
+			CL.collectionID,
+		FROM collectionlinks AS CL 
+		WHERE CL.collectionID = ?
+			AND CL.linkID = ?;
+	`
+
+	err := Mysql.QueryRow(statement, body.CollectionID, body.LinkID).Scan(
+		&body.CollectionID,
+	)
+
+	if err == nil {
+		c.IndentedJSON(http.StatusOK, gin.H{
+			"status":  http.StatusOK,
+			"message": "link already exists in this collection",
+		})
+	}
+
 	if err := c.BindJSON(&body); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{
 			"status":  http.StatusBadRequest,
