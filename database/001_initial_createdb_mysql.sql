@@ -27,7 +27,6 @@ CREATE TABLE Links (
 	shortened VARCHAR(100) NOT NULL,
 	createDate DATE NOT NULL,
 	expDate DATE NOT NULL,
-	collectionID INT,
 	CONSTRAINT PK_Links PRIMARY KEY(linkID),
 	CONSTRAINT UC_MainLinks UNIQUE(link)
 );
