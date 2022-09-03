@@ -46,8 +46,7 @@ func CreateURL(c *gin.Context) {
 					link=?, 
 					shortened=?, 
 					expDate=?,
-					createDate=?,
-					collectionID=?;
+					createDate=?;
 				`,
 			)
 
@@ -60,12 +59,11 @@ func CreateURL(c *gin.Context) {
 				return
 			}
 
-			_, err = stmt.Exec(
+			res, err := stmt.Exec(
 				url.MainUrl,
 				url.ShortenedUrl,
 				url.ExpDate,
 				url.CreateDate,
-				url.CollectionID,
 			)
 
 			if err != nil {
@@ -77,6 +75,18 @@ func CreateURL(c *gin.Context) {
 				return
 			}
 
+			lid, err := res.LastInsertId()
+
+			if err != nil {
+				c.IndentedJSON(http.StatusInternalServerError, gin.H{
+					"status":  http.StatusInternalServerError,
+					"message": "could not retrieve last inserted data",
+					"error":   string(err.Error()),
+				})
+				return
+			}
+
+			url.LinkID = lid
 		} else {
 			tmpExpDate := time.Now()
 			tmpExpDate = tmpExpDate.AddDate(0, 1, 0)
@@ -87,7 +97,6 @@ func CreateURL(c *gin.Context) {
 				SET 
 					link=?, 
 					shortened=?, 
-					collectionID=?,
 					expDate=?,
 					createDate=?;
 				`,
@@ -101,10 +110,9 @@ func CreateURL(c *gin.Context) {
 				return
 			}
 
-			_, err = stmt.Exec(
+			res, err := stmt.Exec(
 				url.MainUrl,
 				url.ShortenedUrl,
-				url.CollectionID,
 				url.ExpDate,
 				url.CreateDate,
 			)
@@ -117,6 +125,50 @@ func CreateURL(c *gin.Context) {
 				})
 				return
 			}
+
+			lid, err := res.LastInsertId()
+
+			if err != nil {
+				c.IndentedJSON(http.StatusInternalServerError, gin.H{
+					"status":  http.StatusInternalServerError,
+					"message": "could not retrieve last inserted data",
+					"error":   string(err.Error()),
+				})
+				return
+			}
+
+			url.LinkID = lid
+		}
+		stmt, err := Mysql.Prepare(
+			`
+			INSERT INTO collectionlinks
+			SET
+				linkID = ?,
+				collectionID = ?
+			`,
+		)
+
+		if err != nil {
+			c.IndentedJSON(http.StatusInternalServerError, gin.H{
+				"status":  http.StatusInternalServerError,
+				"message": "Could not prepare collection and links statement",
+				"error":   string(err.Error()),
+			})
+			return
+		}
+
+		_, err = stmt.Exec(
+			&url.LinkID,
+			&url.CollectionID,
+		)
+
+		if err != nil {
+			c.IndentedJSON(http.StatusInternalServerError, gin.H{
+				"status":  http.StatusInternalServerError,
+				"message": "Could not insert the connection row between collection and link",
+				"error":   string(err.Error()),
+			})
+			return
 		}
 
 	} else {
@@ -143,7 +195,7 @@ func CreateURL(c *gin.Context) {
 				return
 			}
 
-			_, err = stmt.Exec(
+			res, err := stmt.Exec(
 				url.MainUrl,
 				url.ShortenedUrl,
 				url.ExpDate,
@@ -158,6 +210,19 @@ func CreateURL(c *gin.Context) {
 				})
 				return
 			}
+
+			lid, err := res.LastInsertId()
+
+			if err != nil {
+				c.IndentedJSON(http.StatusInternalServerError, gin.H{
+					"status":  http.StatusInternalServerError,
+					"message": "could not retrieve last inserted data",
+					"error":   string(err.Error()),
+				})
+				return
+			}
+
+			url.LinkID = lid
 		} else {
 			tmpExpDate := time.Now()
 			tmpExpDate = tmpExpDate.AddDate(0, 1, 0)
@@ -181,7 +246,7 @@ func CreateURL(c *gin.Context) {
 				return
 			}
 
-			_, err = stmt.Exec(
+			res, err := stmt.Exec(
 				url.MainUrl,
 				url.ShortenedUrl,
 				url.ExpDate,
@@ -197,14 +262,25 @@ func CreateURL(c *gin.Context) {
 				return
 			}
 
-		}
+			lid, err := res.LastInsertId()
 
+			if err != nil {
+				c.IndentedJSON(http.StatusInternalServerError, gin.H{
+					"status":  http.StatusInternalServerError,
+					"message": "could not retrieve last inserted data",
+					"error":   string(err.Error()),
+				})
+				return
+			}
+
+			url.LinkID = lid
+		}
 	}
 	c.IndentedJSON(http.StatusOK, url)
 }
 
 func GetURLByShortened(c *gin.Context) {
-	var url models.UrlAlt
+	var url models.DBUrl
 
 	var now string
 	currentTime := time.Now()
@@ -223,15 +299,13 @@ func GetURLByShortened(c *gin.Context) {
 	result, err := Mysql.Query(
 		`
 		SELECT 
-			linkID,
-			link,
-			shortened,
-			expDate,
-			createDate,
-			collectionID
-		FROM links 
-		WHERE shortened=?
-		LIMIT 1; 
+			L.linkID,
+			L.link,
+			L.shortened,
+			L.expDate,
+			L.createDate
+		FROM links AS L
+		WHERE shortened=?;
 		`, shortened,
 	)
 
@@ -251,7 +325,6 @@ func GetURLByShortened(c *gin.Context) {
 			&url.ShortenedUrl,
 			&url.ExpDate,
 			&url.CreateDate,
-			&url.CollectionID,
 		)
 
 		if err != nil {
@@ -324,7 +397,7 @@ func GetCollectionURLs(c *gin.Context) {
 	results, err := Mysql.Query(
 		`
 		SELECT
-			L.collectionID,
+			LC.collectionID,
 			L.expDate,
 			L.createDate,
 			L.link,
@@ -335,7 +408,9 @@ func GetCollectionURLs(c *gin.Context) {
 				FROM linkhits AS LH
 				WHERE LH.linkID = LH.linkID
 			) AS hitNumber
-		FROM Links AS L
+		FROM links AS L
+			INNER JOIN linkcollections AS LC
+				ON LC.linkID = L.linkID
 		WHERE collectionID = ?
 		`, id,
 	)
@@ -391,15 +466,17 @@ func GetUserURLs(c *gin.Context) {
 	results, err := Mysql.Query(
 		`
 		SELECT 
-			L.collectionID,
+			C.collectionID,
 			L.expDate,
 			L.createDate,
 			L.link,
 			L.linkID,
 			L.shortened
-		FROM Links AS L
-			INNER JOIN Collections AS C
-				ON L.collectionID = C.collectionID
+		FROM links AS L
+			INNER JOIN linkcollections AS LC
+				ON LC.linkID = L.linkID
+			INNER JOIN collections AS C
+				ON LC.collectionID = C.collectionID
 			INNER JOIN Users AS U
 				ON U.userID = C.userID
 		WHERE U.userID = ?
@@ -451,7 +528,7 @@ func DeleteURLByID(c *gin.Context) {
 	}
 
 	result, err := Mysql.Exec(`
-		DELETE FROM Links
+		DELETE FROM links
 		WHERE linkID = ?
 		`, id,
 	)
@@ -486,9 +563,9 @@ func DeleteURLByID(c *gin.Context) {
 	})
 }
 
-func GetUserUrlReport(c *gin.Context) {
+func GetUserUrlHistory(c *gin.Context) {
 	userID := c.Param("UserID")
-	var urls []models.ReportUrl
+	var urls []models.HistoryUrl
 
 	results, err := Mysql.Query(
 		`
@@ -500,14 +577,14 @@ func GetUserUrlReport(c *gin.Context) {
 			L.link,
 			L.linkID,
 			L.shortened,
-			(
-				SELECT COUNT(LH.hitID)
-				FROM linkhits AS LH
-				WHERE LH.linkID = LH.linkID
-			) AS hitNumber
+			LH.hitDate
 		FROM briefly.links AS L
+			INNER JOIN briefly.collectionlinks AS LC
+				ON LC.linkID = L.linkID
 			INNER JOIN briefly.collections AS C
-				ON C.collectionID = L.collectionID
+				ON C.collectionID = LC.collectionID
+			INNER JOIN linkhits AS LH
+				ON LH.linkID = L.linkID
 		WHERE C.userID = ?
 		ORDER BY L.createDate DESC
 		`, userID,
@@ -523,7 +600,7 @@ func GetUserUrlReport(c *gin.Context) {
 	}
 
 	for results.Next() {
-		var url models.ReportUrl
+		var url models.HistoryUrl
 
 		err := results.Scan(
 			&url.CollectionID,
@@ -533,7 +610,7 @@ func GetUserUrlReport(c *gin.Context) {
 			&url.MainUrl,
 			&url.LinkID,
 			&url.ShortenedUrl,
-			&url.HitNumber,
+			&url.HitDate,
 		)
 
 		if err != nil {
@@ -543,6 +620,66 @@ func GetUserUrlReport(c *gin.Context) {
 				"error":   string(err.Error()),
 			})
 		}
+		urls = append(urls, url)
+	}
+
+	c.IndentedJSON(http.StatusOK, gin.H{
+		"status":  http.StatusOK,
+		"message": urls,
+	})
+}
+
+func GetUserUrlReport(c *gin.Context) {
+	userID := c.Param("UserID")
+	var urls []models.ReportUrl
+
+	result, err := Mysql.Query(
+		`
+		SELECT
+			L.linkID,
+			L.shortened,
+			L.link,
+			C.collectionName,
+			C.collectionID,
+			L.expDate,
+			L.createDate,
+			(
+				SELECT COUNT(LH.hitID)
+				FROM linkhits AS LH
+				WHERE linkID = L.linkID
+			) AS hitNumber
+		FROM links AS L
+			INNER JOIN collectionlinks AS CL
+				ON CL.linkID = L.linkID
+			INNER JOIN collections AS C
+				ON C.collectionID = CL.collectionID
+		WHERE C.userID = ?
+		ORDER BY hitNumber DESC
+		`, userID,
+	)
+
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{
+			"status":  http.StatusInternalServerError,
+			"message": "could not select required data from database",
+			"error":   string(err.Error()),
+		})
+	}
+
+	for result.Next() {
+		var url models.ReportUrl
+
+		result.Scan(
+			&url.LinkID,
+			&url.ShortenedUrl,
+			&url.MainUrl,
+			&url.CollectionName,
+			&url.CollectionID,
+			&url.ExpDate,
+			&url.CreateDate,
+			&url.HitNumber,
+		)
+
 		urls = append(urls, url)
 	}
 
